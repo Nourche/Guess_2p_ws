@@ -9,10 +9,7 @@ server.on("connection", async (socket) => {
   console.log("Client connected");
 
   // Add the new player to the list
-  players.push({
-    socket,
-    attempts: 0,
-  });
+  players.push(socket);
 
   // If two players are connected, start the game
   if (players.length === 2) {
@@ -22,44 +19,25 @@ server.on("connection", async (socket) => {
 
     // Notify each player that the game has started
     players.forEach((player, index) => {
-      player.socket.send(`Game started! You are Player ${index + 1}.`);
+      player.send(`Game started! You are Player ${index + 1}.`);
     });
 
     // Listen for messages from players
-    players.forEach((playerObj, index) => {
-      playerObj.socket.on("message", (message) => {
+    players.forEach((player, index) => {
+      player.on("message", (message) => {
         console.log(`Player ${index + 1} guessed: ${message}`);
-        const player = players[index];
 
-        // Check if player and attempts property exist
-        if (player &&   player.attempts < 5) {
-          // Check if attempts have reached the limit
-          if (parseInt(message) === randomNumber) {
-            // Notify the winning player
-            player.socket.send("Congratulations! You win!");
-            console.log(`Player ${index + 1} wins!`);
+        if (parseInt(message) === randomNumber) {
+          // Notify the winning player
+          player.send("Congratulations! You win!");
+          console.log(`Player ${index + 1} wins!`);
 
-            // Notify the other player
-            const otherPlayerObj = players.find((p, i) => i !== index);
-            otherPlayerObj.socket.send("Game over. You lose!");
-
-            // Reset the game
-            resetGame();
-          } else {
-            // Notify the player to try again
-            player.socket.send(`Try again! Attempts left: ${4 - player.attempts}`);
-            
-            // Increment attempts
-            player.attempts++;
-
-            // If attempts reach the limit, notify the player and reset the game
-            if (player.attempts === 5) {
-              player.socket.send("You've reached the maximum number of attempts. Game over!");
-              const otherPlayerObj = players.find((p, i) => i !== index);
-            otherPlayerObj.socket.send("other user passed the limitted attempts ,you win!!");
-            resetGame();
-            }
-          }
+          // Notify the other player
+          const otherPlayer = players.find((p, i) => i !== index);
+          otherPlayer.send("Game over. You lose!");
+        } else {
+          // Notify the player to try again
+          player.send("Try again!");
         }
       });
     });
@@ -70,17 +48,24 @@ server.on("connection", async (socket) => {
     console.log("Client disconnected");
 
     // Remove the disconnected player from the list
-    const index = players.findIndex((player) => player.socket === socket);
+    const index = players.indexOf(socket);
     if (index !== -1) {
       players.splice(index, 1);
     }
-
-    // Reset the game if a player disconnects
-    resetGame();
   });
 });
 
-function resetGame() {
-  // Clear the list of players
-  players.length = 0;
-}
+// async function askQuestion(question) {
+//   return new Promise((resolve) => {
+//     const readline = require("readline").createInterface({
+//       input: process.stdin,
+//       output: process.stdout,
+//     });
+
+//     // readline.question(question, (answer) => {
+//     //   resolve(answer);
+//     //   readline.close();
+//     // });
+//   });
+// }
+
