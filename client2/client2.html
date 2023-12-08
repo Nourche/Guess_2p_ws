@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebSocket Client</title>
+  </head>
+  <body>
+    <h1>WebSocket Client</h1>
+
+    <label for="the guessed num">Enter you guess:</label>
+    <input type="text" id="textInput" placeholder="Type number..." /><button
+      id="sendBtn"
+    >
+      Send the number
+    </button>
+    <script>
+      const socket = new WebSocket("ws://localhost:8083");
+
+      socket.addEventListener("open", () => {
+        console.log("Connected to WebSocket server");
+      });
+
+      socket.addEventListener("message", (event) => {
+        console.log(`Received message: ${event.data}`);
+      });
+
+      document.getElementById("sendBtn").addEventListener("click", () => {
+        const inputValue = document.getElementById("textInput").value;
+        socket.send(inputValue);
+      });
+    </script>
+  </body>
+</html>
